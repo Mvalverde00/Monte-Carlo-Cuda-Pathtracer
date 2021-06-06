@@ -21,6 +21,7 @@
     <ClCompile Include="src\input\controls.cpp" />
     <ClCompile Include="src\input\keyboard.cpp" />
     <ClCompile Include="src\input\mouse.cpp" />
+    <ClCompile Include="src\scene.cpp" />
     <CudaCompile Include="src\camera.cu">
       <FileType>Document</FileType>
     </CudaCompile>
@@ -46,6 +47,7 @@
     <ClInclude Include="src\input\keyboard.h" />
     <ClInclude Include="src\input\mouse.h" />
     <ClInclude Include="src\material.cuh" />
+    <ClInclude Include="src\mesh.cuh" />
     <ClInclude Include="src\opengl_all.h" />
     <ClInclude Include="src\opengl_interface.h" />
     <ClInclude Include="src\pathtrace.cuh" />
@@ -54,6 +56,7 @@
     <ClInclude Include="src\window.h" />
   </ItemGroup>
   <ItemGroup>
+    <CudaCompile Include="src\mesh.cu" />
     <CudaCompile Include="src\pathtrace.cu" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

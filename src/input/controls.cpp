@@ -54,6 +54,7 @@ void updateCamera(Keyboard& keyboard, Mouse& mouse, Camera* cam, PTData& data, f
   if (norm != 0.0 || rotChange) {
     data.reset = true;
     data.samples = 0;
+    data.renderTime = 0.0f;
 
     CUDA_CALL(cudaMemcpy(data.cam, cam, sizeof(Camera), cudaMemcpyHostToDevice));
   }
@@ -65,4 +66,14 @@ void displayCameraStats(Camera* cam, PTData& data) {
   ImGui::Text("Camera Pos: %f %f %f", cam->pos.x, cam->pos.y, cam->pos.z);
   ImGui::Text("Camera yaw/pitch: %f %f", yaw, pitch);
   ImGui::Text("Samples accumulated: %d", data.samples);
+  ImGui::Text("Total render time: %f", data.renderTime);
+  ImGui::Text("Average Samples per Second: %f", data.samples / data.renderTime);
+  ImGui::Text("Geometry: Rendering %d spheres and %d meshes.", data.n_sphs, data.n_meshes);
+
+  if (ImGui::Checkbox("Show object normals", &data.showNormals)) {
+    data.samples = 0;
+    data.renderTime = 0.0f;
+    data.reset = true;
+
+  }
 }

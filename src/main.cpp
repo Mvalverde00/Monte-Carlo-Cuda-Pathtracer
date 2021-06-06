@@ -9,6 +9,7 @@
 #include "input/mouse.h"
 #include "input/keyboard.h"
 #include "input/controls.h"
+#include "scene.h"
 
 
 #include <iostream>
@@ -29,16 +30,13 @@ int main(int argc, char* argv) {
   OpenGLInterface *openGL = new OpenGLInterface(XRES, YRES);
 
   // TODO: Setup camera, scene
-  Camera* cam = new Camera(glm::vec3(0,0,0));
+  glm::mat4 rot = Camera::lookAt(glm::vec3(13, 2, 3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+  Frustum frust(double(XRES) / YRES, 50.0, 2.0);
+  Camera* cam = new Camera(glm::vec3(13, 2, 3), rot, frust);
 
   Camera* d_cam;
   CUDA_CALL(cudaMalloc(&d_cam, sizeof(Camera)));
   CUDA_CALL(cudaMemcpy(d_cam, cam, sizeof(Camera), cudaMemcpyHostToDevice));
-
-  Sphere* sphere = new Sphere(glm::vec3(0.0, 0.0, -2.0), 1.0f);
-  Sphere* d_sphere;
-  CUDA_CALL(cudaMalloc(&d_sphere, sizeof(Sphere)));
-  CUDA_CALL(cudaMemcpy(d_sphere, sphere, sizeof(Sphere), cudaMemcpyHostToDevice));
 
   curandState* d_rand_state;
   CUDA_CALL(cudaMalloc(&d_rand_state, XRES * YRES * sizeof(curandState)));
@@ -48,8 +46,20 @@ int main(int argc, char* argv) {
   CUDA_CALL(cudaMalloc(&d_accum, XRES * YRES * sizeof(glm::vec3)));
   CUDA_CALL(cudaMemset(d_accum, 0.0f, XRES * YRES * 3));
 
-  PTData pathData = { d_rand_state, d_accum, 0, false, d_sphere, d_cam };
+  PTData pathData(d_rand_state, d_accum, d_cam);
 
+  Scene* scene = new Scene("F:\\cs179\\CudaPathTracer\\resources\\");
+  /*
+  int diffuseGray = scene->addMat(makeLambertian(glm::vec3(0.7, 0.7, 0.7)));
+  int metallicCaltech = scene->addMat(makeMetal(glm::vec3(1.0, 0.4235, 0.0471)));
+  int glass = scene->addMat(makeDialectric(1.3f));
+  scene->addSphere(Sphere(glm::vec3(0.0, 0.0, -2.0), 1.0f, diffuseGray));
+  scene->addSphere(Sphere(glm::vec3(2.0, 0.0, -2.0), 1.0f, metallicCaltech));
+  scene->addSphere(Sphere(glm::vec3(-2.0, 0.0, -2.0), 1.0f, glass));
+  scene->addSphere(Sphere(glm::vec3(0.0, -1001.0, -2.0), 1000.0f, diffuseGray));
+  scene->copyToGPU(pathData);*/
+  scene->populateComplexMesh();
+  scene->copyToGPU(pathData);
 
   Mouse mouse = Mouse();
   Keyboard keyboard = Keyboard();
@@ -84,16 +94,18 @@ int main(int argc, char* argv) {
     // handle movement, camera panning
     updateCamera(keyboard, mouse, cam, pathData, dt);
 
+    displayCameraStats(cam, pathData);
+
     // Process rays and draw to screen with cuda
     openGL->beginCuda();
     pathData.samples += 1;
+    pathData.renderTime += dt;
     drawToScreen(XRES, YRES, openGL->array_ptr, pathData);
     openGL->endCuda();
 
-    std::cout << "Frametime: " << (1.0 / ImGui::GetIO().Framerate) << "\n";
+    //std::cout << "Frametime: " << (1.0 / ImGui::GetIO().Framerate) << "\n";
 
     openGL->blit(XRES, YRES);
-    displayCameraStats(cam, pathData);
 
     GLenum err;
     while ((err = glGetError()) != GL_NO_ERROR) {
@@ -114,7 +126,9 @@ int main(int argc, char* argv) {
   CUDA_CALL(cudaFree(d_cam));
   CUDA_CALL(cudaFree(d_accum));
   CUDA_CALL(cudaFree(d_rand_state));
-  CUDA_CALL(cudaFree(d_sphere));
+  scene->freeAll();
+  scene->freeFromGPU(pathData);
+  delete scene;
   delete cam;
   delete openGL;
   delete window;

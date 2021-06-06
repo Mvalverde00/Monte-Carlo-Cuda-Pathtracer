@@ -18,7 +18,11 @@ struct HitRecord {
 
   bool front; // Did we hit front of the face?
 
-  //Material* mat;
+  int matIdx; // index of material of hit object
+
+  // Used for texturing the triangle and interpolating normal.
+  float u;
+  float v;
 
 
   inline void setNormal(const Ray& r, const glm::vec3& n) {
@@ -31,10 +35,35 @@ class Sphere {
 public:
   glm::vec3 center;
   float radius;
-  //Material* mat;
+  int matIdx;
 
   Sphere();
-  Sphere(glm::vec3 center, float radius);
+  Sphere(glm::vec3 center, float radius, int matIdx);
+
+  CUDA_CALLABLE_MEMBER void hit(const Ray& r, float t_min, float t_max, HitRecord& rec);
+};
+
+
+struct Vertex {
+  glm::vec3 pos;
+  glm::vec3 n;
+
+  Vertex(glm::vec3 pos, glm::vec3 n) : pos(pos), n(n) {};
+};
+
+/* A triangle which is part of a mesh
+ * No need to store own material, uses same as container mesh.
+ * Not technically hittable on its own, since it needs info from container mesh
+ * to be complete. */
+class Triangle {
+public:
+  Vertex v0, v1, v2;
+
+  Triangle(Vertex v0, Vertex v1, Vertex v2) : v0(v0), v1(v1), v2(v2) {};
+
+  // Given barycentric coords u and v, with w = 1 - u - v, return the interpolated
+  // normal at those coordinates
+  CUDA_CALLABLE_MEMBER glm::vec3 getNormal(float u, float v);
 
   CUDA_CALLABLE_MEMBER void hit(const Ray& r, float t_min, float t_max, HitRecord& rec);
 };
