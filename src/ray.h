@@ -8,7 +8,9 @@
 class Ray {
 public:
   glm::vec3 origin;
+  //float padding1;
   glm::vec3 dir;
+  //float padding2;
 
 
   CUDA_CALLABLE_MEMBER Ray() : origin(glm::vec3(0.0, 0.0, 0.0)), dir(glm::vec3(0.0, 0.0, 1.0)) {};

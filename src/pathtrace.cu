@@ -86,9 +86,12 @@ __device__ glm::vec3 rayColor(Ray& r, HitRecord& hr, PTData& args, curandState* 
       if (args.showNormals)
         return (glm::normalize(hr.normal) + glm::vec3(1.0, 1.0, 1.0)) / 2.0f;
 
+      glm::vec3 emitted = args.mats[hr.matIdx].emit();
       glm::vec3 attenuation;
       if (args.mats[hr.matIdx].scatter(r, hr, attenuation, rand)) {
         accumulate *= attenuation;
+      } else {
+        return accumulate * emitted;
       }
 
     } else {
@@ -112,13 +115,25 @@ __global__ void writeColors(unsigned int width, unsigned int height, PTData args
 
     glm::vec3 sample_value = rayColor(r, hr, args, &args.rand[y * width + x]);
 
-
+    /*
+    if (args.reset) {
+      args.r[y * width + x] = sample_value.r;
+      args.g[y * width + x] = sample_value.g;
+      args.b[y * width + x] = sample_value.b;
+    } else {
+      args.r[y * width + x] += sample_value.r;
+      args.g[y * width + x] += sample_value.g;
+      args.b[y * width + x] += sample_value.b;
+    }
+    glm::vec3 res = glm::clamp(glm::vec3(args.r[y * width + x], args.g[y * width + x], args.b[y * width + x]) / float(args.samples), 0.0f, 1.0f);
+    */
+    
     if (args.reset) {
       args.accum[y * width + x] = sample_value;
     } else {
       args.accum[y * width + x] += sample_value;
     }
-    glm::vec3 res = args.accum[y * width + x] / float(args.samples);
+    glm::vec3 res = glm::clamp(args.accum[y * width + x] / float(args.samples), 0.0f, 1.0f);
     uchar4 color = make_uchar4(255 * res.x, 255 * res.y, 255 * res.z, 255);
     surf2Dwrite(color, surf, x * sizeof(color), y, cudaBoundaryModeZero);
   }
@@ -126,8 +141,8 @@ __global__ void writeColors(unsigned int width, unsigned int height, PTData args
 
 void drawToScreen(int XRES, int YRES, cudaArray_const_t array, PTData& args) {
   CUDA_CALL(cudaBindSurfaceToArray(surf, array));
-  const int blockX = 16;
-  const int blockY = 16;
+  const int blockX = 32;
+  const int blockY = 3;
   dim3 blockSize(blockX, blockY);
   dim3 gridSize((XRES+ blockX - 1) / blockX, (YRES+ blockY - 1) / blockY);
   writeColors<<<gridSize, blockSize>>>((unsigned int)XRES, (unsigned int)YRES, args);
@@ -135,6 +150,11 @@ void drawToScreen(int XRES, int YRES, cudaArray_const_t array, PTData& args) {
   cudaError_t err = cudaGetLastError();
   if (err != cudaSuccess)
     printf("Error: %s\n", cudaGetErrorString(err));
+  
+
+  //int bs, gs;
+  //cudaOccupancyMaxPotentialBlockSize(&bs, &gs, writeColors);
+  //std::cout << bs << ", " << gs << "\n";
 }
 
 

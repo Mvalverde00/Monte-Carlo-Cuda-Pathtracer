@@ -50,9 +50,11 @@ CUDA_ONLY_MEMBER bool Material::scatter(Ray& in, HitRecord& rec, glm::vec3& atte
       return glm::dot(in.dir, rec.normal) > 0.0f;
     case MaterialType::DIALECTRIC :
       atten = color;
+      //bool front = glm::dot(rec.normal, in.dir) < 0.0f;
       float eta = rec.front ? (1.0 / IR) : IR;
 
       glm::vec3 inDir = glm::normalize(in.dir);
+      //rec.normal = front ? rec.normal : -rec.normal;
       float cosTheta = fmin(1.0f, glm::dot(-inDir, rec.normal));
       float sinTheta = sqrt(1.0f - cosTheta * cosTheta);
       
@@ -64,6 +66,18 @@ CUDA_ONLY_MEMBER bool Material::scatter(Ray& in, HitRecord& rec, glm::vec3& atte
       in = Ray(rec.point, outDir);
       return true;
 
+    default:
+      return false;
+
+  }
+}
+
+CUDA_ONLY_MEMBER glm::vec3 Material::emit() const {
+  switch (type) {
+    case MaterialType::LIGHT:
+      return color;
+    default:
+      return glm::vec3(0, 0, 0);
   }
 }
 
@@ -93,6 +107,14 @@ Material makeDialectric(float IR) {
   mat.color = glm::vec3(1,1,1);
   mat.IR = IR;
   mat.type = MaterialType::DIALECTRIC;
+
+  return mat;
+}
+
+Material makeLight(glm::vec3 emitted) {
+  Material mat = Material();
+  mat.color = emitted;
+  mat.type = MaterialType::LIGHT;
 
   return mat;
 }

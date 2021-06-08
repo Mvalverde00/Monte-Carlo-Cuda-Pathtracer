@@ -47,6 +47,7 @@ public:
 
   void populateRandomScene();
   void populateComplexMesh();
+  void populateCornellBox();
 };
 
 

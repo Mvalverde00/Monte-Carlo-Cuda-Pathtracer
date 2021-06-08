@@ -21,7 +21,8 @@ Window::Window(std::string name, int width, int height) {
   _context = SDL_GL_CreateContext(_sdl_window);
 
   //SDL_SetRelativeMouseMode(SDL_TRUE); // Captures mouse
-  SDL_GL_SetSwapInterval(1); // Enable VSync
+  //SDL_GL_SetSwapInterval(1); // Enable VSync
+  SDL_GL_SetSwapInterval(0); // Disable VSync
 
   glewInit();
   glViewport(0, 0, width, height);

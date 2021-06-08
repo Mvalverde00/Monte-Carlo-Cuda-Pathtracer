@@ -18,6 +18,9 @@ struct PTData {
   curandState *rand;
   glm::vec3 *accum;
   Camera *cam;
+  float *r;
+  float *g;
+  float *b;
 
   // Scene Info
   int samples;

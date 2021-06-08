@@ -11,7 +11,8 @@ struct HitRecord;
 enum class MaterialType {
   LAMBERTIAN,
   METAL,
-  DIALECTRIC
+  DIALECTRIC,
+  LIGHT
 };
 
 class Material {
@@ -28,11 +29,15 @@ public:
   // Overwrites the "in" ray with the new output ray.
   CUDA_ONLY_MEMBER bool scatter(Ray& in, HitRecord& rec, glm::vec3& atten, curandState* rand) const;
 
+
+  CUDA_ONLY_MEMBER glm::vec3 emit() const;
+
 };
 
 Material makeLambertian(glm::vec3 color);
 Material makeMetal(glm::vec3 color);
 Material makeMetal(glm::vec3 color, float fuzz);
 Material makeDialectric(float IR);
+Material makeLight(glm::vec3 emitted);
 
 #endif

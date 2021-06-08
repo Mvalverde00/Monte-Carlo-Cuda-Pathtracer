@@ -96,8 +96,9 @@ CUDA_CALLABLE_MEMBER void MeshInstance::hit(const Ray& r, float t_min, float t_m
 
   // Re-adjust normal and intersection points to world coordinates
   if (rec.isHit) {
-    //rec.setNormal(r, glm::normalize(glm::vec3(tMatInvTpose * glm::vec4(rec.normal, 0.0f))));
-    //rec.point = glm::vec3(tMat * glm::vec4(rec.point, 1.0f));
+    rec.setNormal(r, glm::normalize(glm::vec3(tMatInvTpose * glm::vec4(rec.normal, 0.0f))));
+    //rec.normal = glm::normalize(glm::vec3(tMatInvTpose * glm::vec4(rec.normal, 0.0f)));
+    rec.point = glm::vec3(tMat * glm::vec4(rec.point, 1.0f));
   }
 
 }

@@ -34,6 +34,7 @@ CUDA_CALLABLE_MEMBER void Sphere::hit(const Ray& r, float t_min, float t_max, Hi
   rec.t = root;
   rec.point = r.at(root);
   rec.setNormal(r, (rec.point - center) / radius);
+  //rec.normal = (rec.point - center) / radius;
   rec.isHit = true;
   rec.matIdx = matIdx;
 }
@@ -69,14 +70,13 @@ CUDA_CALLABLE_MEMBER void Triangle::hit(const Ray& r, float t_min, float t_max, 
   }
 
   float t = f * glm::dot(e1, q);
-  if (t > 0.1 && t > t_min && t < t_max) {
+  if (t > t_min && t < t_max) {
     rec.point = r.origin + t * r.dir;
     rec.t = t;
     rec.u = u;
     rec.v = v;
-    rec.setNormal(r, getNormal(u, v));
-    //rec.normal = getNormal(u, v);
-    //rec.front = glm::dot(r.dir, rec.normal) < 0.0f;
+    //rec.setNormal(r, getNormal(u, v));
+    rec.normal = getNormal(u, v);
     rec.isHit = true;
     return;
   }

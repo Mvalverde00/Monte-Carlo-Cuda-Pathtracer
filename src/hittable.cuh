@@ -26,7 +26,7 @@ struct HitRecord {
 
 
   inline void setNormal(const Ray& r, const glm::vec3& n) {
-    front = glm::dot(r.dir, n) < 0.0;
+    front = glm::dot(r.dir, n) < 0.0f;
     normal = front ? n : -n;
   }
 };

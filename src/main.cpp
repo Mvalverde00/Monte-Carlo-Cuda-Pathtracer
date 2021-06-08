@@ -30,9 +30,15 @@ int main(int argc, char* argv) {
   OpenGLInterface *openGL = new OpenGLInterface(XRES, YRES);
 
   // TODO: Setup camera, scene
+  
   glm::mat4 rot = Camera::lookAt(glm::vec3(13, 2, 3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
   Frustum frust(double(XRES) / YRES, 50.0, 2.0);
   Camera* cam = new Camera(glm::vec3(13, 2, 3), rot, frust);
+  /*
+  Frustum frust(double(XRES) / YRES, 75.0, 1.0);
+  glm::vec3 pos(0, 20, -45);
+  glm::mat4 rot = Camera::lookAt(pos, glm::vec3(0, 15, 0), glm::vec3(0, 1, 0));
+  Camera* cam = new Camera(pos, rot, frust);*/
 
   Camera* d_cam;
   CUDA_CALL(cudaMalloc(&d_cam, sizeof(Camera)));
@@ -46,7 +52,18 @@ int main(int argc, char* argv) {
   CUDA_CALL(cudaMalloc(&d_accum, XRES * YRES * sizeof(glm::vec3)));
   CUDA_CALL(cudaMemset(d_accum, 0.0f, XRES * YRES * 3));
 
+  float *d_r, *d_g, *d_b;
+  CUDA_CALL(cudaMalloc(&d_r, XRES * YRES * sizeof(float)));
+  CUDA_CALL(cudaMemset(d_r, 0.0f, XRES * YRES));
+  CUDA_CALL(cudaMalloc(&d_g, XRES * YRES * sizeof(float)));
+  CUDA_CALL(cudaMemset(d_g, 0.0f, XRES * YRES));
+  CUDA_CALL(cudaMalloc(&d_b, XRES * YRES * sizeof(float)));
+  CUDA_CALL(cudaMemset(d_b, 0.0f, XRES * YRES));
+
   PTData pathData(d_rand_state, d_accum, d_cam);
+  pathData.r = d_r;
+  pathData.g = d_g;
+  pathData.b = d_b;
 
   Scene* scene = new Scene("F:\\cs179\\CudaPathTracer\\resources\\");
   /*
@@ -59,6 +76,8 @@ int main(int argc, char* argv) {
   scene->addSphere(Sphere(glm::vec3(0.0, -1001.0, -2.0), 1000.0f, diffuseGray));
   scene->copyToGPU(pathData);*/
   scene->populateComplexMesh();
+  //scene->populateRandomScene();
+  //scene->populateCornellBox();
   scene->copyToGPU(pathData);
 
   Mouse mouse = Mouse();
@@ -123,6 +142,9 @@ int main(int argc, char* argv) {
     mouse.reset();
   }
 
+  CUDA_CALL(cudaFree(d_r));
+  CUDA_CALL(cudaFree(d_g));
+  CUDA_CALL(cudaFree(d_b));
   CUDA_CALL(cudaFree(d_cam));
   CUDA_CALL(cudaFree(d_accum));
   CUDA_CALL(cudaFree(d_rand_state));
