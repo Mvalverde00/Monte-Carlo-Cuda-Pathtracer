@@ -4,6 +4,7 @@
 #include <imgui.h>
 
 #include "helper_cuda.h"
+#include "scene.h"
 
 glm::vec3 vel;
 float yaw = 0.0f;
@@ -32,6 +33,10 @@ void updateCamera(Keyboard& keyboard, Mouse& mouse, Camera* cam, PTData& data, f
   float norm = glm::length(vel);
   if (norm != 0.0) {
     vel = 1.2f * vel / norm;
+
+    if (keyboard.isKeyDown(SDLK_r)) {
+      vel *= 80.0f;
+    }
   }
 
   bool rotChange = false;
@@ -74,6 +79,43 @@ void displayCameraStats(Camera* cam, PTData& data) {
     data.samples = 0;
     data.renderTime = 0.0f;
     data.reset = true;
+  }
+  ImGui::Checkbox("Apply Gamma Correction", &data.gammaCorrect);
+}
 
+
+void handleSceneChanges(Scene* scene, PTData& data) {
+  ImGui::Text("Load a new scene...");
+  void(Scene::*populateFunc)(void) = NULL;
+
+  if (ImGui::Button("Random Spheres")) {
+    populateFunc = &Scene::populateRandomScene;
+  }
+  if (ImGui::Button("Random Spheres with Meshes")) {
+    populateFunc = &Scene::populateComplexMesh;
+  }
+  if (ImGui::Button("Cornell Box")) {
+    populateFunc = &Scene::populateCornellBox;
+  }
+  if (ImGui::Button("Cornell Box with Mirrors")) {
+    populateFunc = &Scene::populateCornellBoxMetal;
+  }
+  if (ImGui::Button("Cornell Box with Glass")) {
+    populateFunc = &Scene::populateCornellBoxDialectric;
+  }
+  if (ImGui::Button("BVH Test")) {
+    populateFunc = &Scene::populateBVHTest;
+  }
+
+  if (populateFunc != NULL) {
+    scene->freeFromGPU(data);
+    scene->freeAll();
+
+    (scene->*populateFunc)();
+    scene->copyToGPU(data);
+
+    data.samples = 0;
+    data.renderTime = 0.0f;
+    data.reset = true;
   }
 }

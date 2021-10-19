@@ -6,13 +6,14 @@
 #include "ray.h"
 #include "helper_cuda.h"
 
+// Forward declaration
+class AABB;
+
 
 struct HitRecord {
-  // Whether or not there was a valid hit.  If false, should not attempt to
-  // access any other data fields as they will be meaningless.
-  bool isHit;
+  //glm::vec3 point; We are now calculating this on-demand to reduce 
+  //the amount of data passed around.
 
-  glm::vec3 point;
   glm::vec3 normal; // Normal must always point against the incident ray.
   float t; // the parameter at which the ray made the hit.
 
@@ -40,7 +41,8 @@ public:
   Sphere();
   Sphere(glm::vec3 center, float radius, int matIdx);
 
-  CUDA_CALLABLE_MEMBER void hit(const Ray& r, float t_min, float t_max, HitRecord& rec);
+  CUDA_CALLABLE_MEMBER bool hit(const Ray& r, float t_min, float t_max, HitRecord& rec);
+  CUDA_CALLABLE_MEMBER void bbox(AABB& out) const;
 };
 
 
@@ -65,7 +67,8 @@ public:
   // normal at those coordinates
   CUDA_CALLABLE_MEMBER glm::vec3 getNormal(float u, float v);
 
-  CUDA_CALLABLE_MEMBER void hit(const Ray& r, float t_min, float t_max, HitRecord& rec);
+  CUDA_CALLABLE_MEMBER bool hit(const Ray& r, float t_min, float t_max, HitRecord& rec);
+  CUDA_CALLABLE_MEMBER void bbox(AABB& out) const;
 };
 
 #endif

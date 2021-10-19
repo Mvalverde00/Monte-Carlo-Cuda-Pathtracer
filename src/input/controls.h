@@ -6,9 +6,12 @@
 #include "pathtrace.cuh"
 #include "camera.cuh"
 
-/* Functions in this file are responsible for displaying and
- * managing the camera state */
+/* Functions in this file are responsible for responding to input
+ * as well as displaying the results of input (e.g. position, rotation,
+ * etc.). 
+ */
 
+class Scene;
 
 /* Updates the camera position given the keyboard presses and mouse movements for
  * the last time interval dt.  Also updates PTData to reflect when the view has been changed
@@ -19,4 +22,5 @@ void updateCamera(Keyboard& keyboard, Mouse& mouse, Camera* cam, PTData& data, f
  * accumulated */
 void displayCameraStats(Camera* cam, PTData& data);
 
+void handleSceneChanges(Scene* scene, PTData& data);
 #endif

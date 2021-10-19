@@ -6,7 +6,11 @@
 
 // Random vector on the unit sphere
 CUDA_ONLY_MEMBER inline glm::vec3 randUnitVec(curandState* rand) {
-  return glm::normalize(glm::vec3(curand_uniform(rand) * 2.0f - 1.0f, curand_uniform(rand) * 2.0f - 1.0f, curand_uniform(rand) * 2.0f - 1.0f));
+  float lambda = acosf(2.0f * curand_uniform(rand) - 1.0f) - 3.141592653f/2.0f;
+  float phi = 3.141592653f * 2.0f * curand_uniform(rand);
+  return glm::vec3(cosf(lambda) * cosf(phi), cosf(lambda) * sinf(phi), sinf(lambda));
+  
+  //return glm::normalize(glm::vec3(curand_uniform(rand) * 2.0f - 1.0f, curand_uniform(rand) * 2.0f - 1.0f, curand_uniform(rand) * 2.0f - 1.0f));
 }
 
 // Random vector inside unit sphere
@@ -34,17 +38,18 @@ CUDA_ONLY_MEMBER inline glm::vec3 refract(const glm::vec3& in, const glm::vec3& 
 
 // Need to have some base method, although in practice this should never be used.
 CUDA_ONLY_MEMBER bool Material::scatter(Ray& in, HitRecord& rec, glm::vec3& atten, curandState* rand) const {
+  glm::vec3 point = in.at(rec.t);
   switch (type) {
     case MaterialType::LAMBERTIAN :
       atten = color;
       glm::vec3 outDir = rec.normal + randUnitVec(rand);
       if (nearZero(outDir))
         outDir = rec.normal;
-      in = Ray(rec.point, outDir);
+      in = Ray(point, outDir);
       return true;
     case MaterialType::METAL :
       atten = color;
-      in = Ray(rec.point, glm::reflect(glm::normalize(in.dir), rec.normal));
+      in = Ray(point, glm::reflect(glm::normalize(in.dir), rec.normal));
       in.dir += fuzzing * randPointSphere(rand);
 
       return glm::dot(in.dir, rec.normal) > 0.0f;
@@ -63,7 +68,7 @@ CUDA_ONLY_MEMBER bool Material::scatter(Ray& in, HitRecord& rec, glm::vec3& atte
       else
         outDir = refract(inDir, rec.normal, eta, cosTheta);
 
-      in = Ray(rec.point, outDir);
+      in = Ray(point, outDir);
       return true;
 
     default:
