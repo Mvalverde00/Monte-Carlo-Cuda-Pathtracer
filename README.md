@@ -1,3 +1,29 @@
+# Results
+The expected output is the rendered scene in an interactive window.  Once a sufficiently low level of variance in the output has been reached, an image can be exported using the "print screen" feature on windows (eventually a true 'export' option will be added, but for now "print screen" is more than sufficient for permanently saving renders).  Several renders created using the program can be found in the samples/ directory.  In case there are issues building the project, a short video showcasing the project in action can be seen here: https://www.youtube.com/watch?v=w0EvK9pR29w
+
+Alternatively, here are some curated screenshots:
+
+| <img src="https://github.com/Mvalverde00/Monte-Carlo-Cuda-Pathtracer/blob/master/results/spheres.png" width="400"> |
+|:--:| 
+| *The first image produced, using the scene from Ray Tracing in One Weekend.* |
+
+
+| <img src="https://github.com/Mvalverde00/Monte-Carlo-Cuda-Pathtracer/blob/master/results/mirror_wall.png" width="400"> |
+|:--:| 
+| *A cornell box demonstrating reflections from metallic materials.* |
+
+| <img src="https://github.com/Mvalverde00/Monte-Carlo-Cuda-Pathtracer/blob/master/results/glass_dragon.png" width="400"> |
+|:--:| 
+| *A glass rendition of the Stanford Dragon.  This is a lot of triangles and requires a BVH of some sort to render.* |
+
+| <img src="https://github.com/Mvalverde00/Monte-Carlo-Cuda-Pathtracer/blob/master/results/sponza.png" width="400"> |
+|:--:| 
+| *A large scene to stress test the BVH system.* |
+
+| <img src="https://github.com/Mvalverde00/Monte-Carlo-Cuda-Pathtracer/blob/master/results/large_scene.png" width="400"> |
+|:--:| 
+| *A ridiculously large scene (~3 Million triangles) to push the BVH system to its limit.  Rendered at about 1 sample per second using the SAH BVH.* |
+
 # Usage Instructions
 Required libraries are ImGUI, tinyobjloader, SDL2, GLM, and GLEW.  However these are all included in the dep/ folder, included in the submission.  The code was built using Visual Studio 2019, and the relevant visual studio solution and project files have been included, as well as the compiled .exe file (for Windows 10) that it produced, although I have no way of knowing if any of these things will actually work without any further adjustments on another computer.  If it does not work as-provided and you would like to run it for yourself, please let me know and I would be happy to help try and see what's going wrong.  Otherwise, there are samples produced using the program in the samples/ directory, as well as a demo youtube video here: https://www.youtube.com/watch?v=w0EvK9pR29w showcasing most of the features.
 
@@ -5,9 +31,6 @@ If you actually build the project yourself, you can run it by simply entering "C
 
 # Project Description
 As promised, I have developed a CUDA accelerated monte-carlo path tracing program, capable of handling indirect lighting, soft shadows, reflection and refraction, and caustics.  For now all scenes are hardcoded in. The renderer also utilizes OpenGL-CUDA interopability to progressively render the scene in a window, which can also be used to interact with the scene by moving or re-orienting the camera.  This also allows for a convenient debug view, with the ImGUI library being used to create a small overlay which displays rendering statistics/information and also has a toggleable option for showing all object normals.  Multiple scenes are included and can be switched between using the debug window.
-
-# Results
-The expected output is the rendered scene in an interactive window.  Once a sufficiently low level of variance in the output has been reached, an image can be exported using the "print screen" feature on windows (eventually a true 'export' option will be added, but for now "print screen" is more than sufficient for permanently saving renders).  Several renders created using the program can be found in the samples/ directory.  In case there are issues building the project, a short video showcasing the project in action can be seen here: https://www.youtube.com/watch?v=w0EvK9pR29w
 
 # Performance Analysis
 All testing was done on my desktop, which has a "Ryzen 9 5900x" CPU and a "RTX 3080" GPU.
